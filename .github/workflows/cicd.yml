@@ -26,3 +26,22 @@ jobs:
 
       - name: Build Jar
         run: mvn clean package
+
+      - name: Create Result File
+        run: |
+          echo "===== CI PIPELINE RESULT =====" > build-result.txt
+          echo "Build Successful" >> build-result.txt
+          echo "JUnit Tests Passed" >> build-result.txt
+          echo "Artifact Generated Successfully" >> build-result.txt
+
+      - name: Upload Result File
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-result
+          path: build-result.txt
+
+      - name: Upload JAR Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-cicd-demo
+          path: target/*.jar
