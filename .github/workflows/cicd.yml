@@ -34,12 +34,11 @@ jobs:
           source: "target/java-cicd-demo-1.0.jar"
           target: "/home/ec2-user/"
 
-      - name: Start Application on EC2
+      - name: Run Application on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            pkill -f java-cicd-demo || true
-            nohup java -jar /home/ec2-user/target/java-cicd-demo-1.0.jar > app.log 2>&1 &
+            java -jar /home/ec2-user/java-cicd-demo-1.0.jar
