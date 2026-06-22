@@ -1,0 +1,15 @@
+minikube addons enable metrics-server
+
+kubectl top nodes
+kubectl top pods
+
+kubectl autoscale deployment payment-payment-chart \
+  --cpu-percent=20 \
+  --min=2 \
+  --max=5
+
+kubectl get hpa
+
+kubectl run load-generator --image=busybox --restart=Never -it -- sh
+
+while true; do wget -q -O- http://payment-payment-chart; done
