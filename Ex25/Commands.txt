@@ -1,0 +1,72 @@
+Create Monitoring Namespace
+
+kubectl create namespace monitoring
+Add Prometheus Repository
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+helm repo update
+
+Install Prometheus + Grafana
+
+helm install monitoring prometheus-community/kube-prometheus-stack `
+-n monitoring `
+--timeout 20m
+
+Verify Installation
+kubectl get pods -n monitoring
+
+helm list -n monitoring
+
+View Metrics
+kubectl top nodes
+
+kubectl top pods -A
+
+Create Logging Namespace
+kubectl create namespace logging
+
+Add Grafana Repository
+helm repo add grafana https://grafana.github.io/helm-charts
+
+helm repo update
+
+Install Loki + Promtail
+helm install loki-stack grafana/loki-stack `
+-n logging `
+--set grafana.enabled=false `
+--set prometheus.enabled=false
+
+Verify Logging Stack
+kubectl get pods -n logging
+
+kubectl get svc -n logging
+
+Test Loki
+kubectl exec -it -n monitoring deployment/monitoring-grafana -- sh
+
+wget -qO- http://loki-stack.logging:3100/ready
+
+Output:
+ready
+
+Create Tracing Namespace
+kubectl create namespace tracing
+
+Install Tempo
+helm install tempo grafana/tempo `
+-n tracing
+
+Verify Tempo
+kubectl get pods -n tracing
+
+kubectl logs tempo-0 -n tracing
+
+Verify Entire Cluster
+kubectl get pods -A
+
+kubectl get nodes
+
+kubectl top nodes
+
+kubectl top pods -A
