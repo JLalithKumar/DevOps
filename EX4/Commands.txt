@@ -1,0 +1,56 @@
+# Create Namespace
+kubectl create namespace external-secrets
+
+# Create IAM Policy
+aws iam create-policy ^
+--policy-name ExternalSecretsPolicy ^
+--policy-document file://policy.json
+
+# Create IAM Service Account (IRSA)
+eksctl create iamserviceaccount ^
+--name external-secrets-sa ^
+--namespace external-secrets ^
+--cluster irsa-lab ^
+--attach-policy-arn arn:aws:iam::<ACCOUNT_ID>:policy/ExternalSecretsPolicy ^
+--approve
+
+# Add External Secrets Helm Repository
+helm repo add external-secrets https://charts.external-secrets.io
+
+# Update Helm Repository
+helm repo update
+
+# Install External Secrets Operator
+helm install external-secrets external-secrets/external-secrets ^
+-n external-secrets ^
+--create-namespace
+
+# Verify Installation
+kubectl get pods -n external-secrets
+
+# Create Secret in AWS Secrets Manager
+aws secretsmanager create-secret ^
+--name payment-app-secret ^
+--secret-string "{\"DB_USERNAME\":\"admin\",\"DB_PASSWORD\":\"password123\",\"JWT_SECRET\":\"secret123\"}" ^
+--region us-east-1
+
+# Create SecretStore
+kubectl apply -f secretstore.yaml
+
+# Verify SecretStore
+kubectl get secretstore -n external-secrets
+
+# Create ExternalSecret
+kubectl apply -f externalsecret.yaml
+
+# Verify ExternalSecret
+kubectl get externalsecret -n external-secrets
+
+# Verify Synced Kubernetes Secret
+kubectl get secret payment-secret -n external-secrets
+
+# View Secret Details
+kubectl describe externalsecret payment-secret -n external-secrets
+
+# Decode Secret Values
+kubectl get secret payment-secret -n external-secrets -o yaml
