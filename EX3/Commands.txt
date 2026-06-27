@@ -1,0 +1,37 @@
+# Exercise 3 - ArgoCD OutOfSync Production Incident
+
+# Verify ArgoCD Application Status
+
+argocd app get payment-service
+
+# Verify Desired State from Git Repository
+
+argocd app manifests payment-service
+
+# Verify Resources Managed by ArgoCD
+
+argocd app resources payment-service
+
+# Check Application Differences
+
+argocd app diff payment-service
+
+# Verify Live Deployment State
+
+kubectl get deployment payment-service
+
+# View Deployment Details
+
+kubectl describe deployment payment-service
+
+# (Optional) Refresh Application State
+
+argocd app diff payment-service --refresh
+
+# (Optional) Sync Application Back to Desired State
+
+argocd app sync payment-service
+
+# Verify Deployment After Sync
+
+kubectl get deployment payment-service
