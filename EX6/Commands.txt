@@ -1,0 +1,179 @@
+# Exercise 6 – EKS Node Scale Failure
+
+## Verify Cluster
+
+kubectl get nodes
+
+kubectl get pods -n kube-system
+
+kubectl get deployment metrics-server -n kube-system
+
+kubectl top nodes
+
+---
+
+## Create Working Directory
+
+mkdir EX6
+
+cd EX6
+
+---
+
+## Deploy Application
+
+kubectl apply -f deployment.yaml
+
+---
+
+## Expose Deployment
+
+kubectl expose deployment payment-service ^
+--type=ClusterIP ^
+--port=80
+
+---
+
+## Verify Deployment
+
+kubectl get deployment
+
+kubectl get pods
+
+kubectl describe deployment payment-service
+
+---
+
+## Create Horizontal Pod Autoscaler
+
+kubectl autoscale deployment payment-service ^
+--cpu-percent=50 ^
+--min=2 ^
+--max=15
+
+---
+
+## Verify HPA
+
+kubectl get hpa
+
+kubectl describe hpa payment-service
+
+---
+
+## Generate CPU Load
+
+kubectl delete deployment payment-service
+
+kubectl apply -f deployment.yaml
+
+kubectl top pods
+
+kubectl get hpa -w
+
+---
+
+## Create Cluster Autoscaler IAM Policy
+
+aws iam create-policy ^
+--policy-name AmazonEKSClusterAutoscalerPolicy ^
+--policy-document file://iam-policy.json
+
+---
+
+## Associate OIDC Provider
+
+eksctl utils associate-iam-oidc-provider ^
+--cluster scaling-lab ^
+--region us-east-1 ^
+--approve
+
+---
+
+## Verify OIDC
+
+aws eks describe-cluster ^
+--name scaling-lab ^
+--query "cluster.identity.oidc.issuer" ^
+--output text
+
+---
+
+## Create IAM Service Account (IRSA)
+
+eksctl create iamserviceaccount ^
+--cluster scaling-lab ^
+--namespace kube-system ^
+--name cluster-autoscaler ^
+--attach-policy-arn arn:aws:iam::<ACCOUNT_ID>:policy/AmazonEKSClusterAutoscalerPolicy ^
+--approve
+
+---
+
+## Verify Service Account
+
+kubectl describe sa cluster-autoscaler -n kube-system
+
+---
+
+## Download Cluster Autoscaler
+
+curl -L -o cluster-autoscaler.yaml https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
+
+---
+
+## Configure Cluster Name
+
+Edit cluster-autoscaler.yaml
+
+Replace:
+
+<YOUR CLUSTER NAME>
+
+With:
+
+scaling-lab
+
+---
+
+## Deploy Cluster Autoscaler
+
+kubectl apply -f cluster-autoscaler.yaml
+
+---
+
+## Verify Cluster Autoscaler
+
+kubectl get deployment -n kube-system
+
+kubectl logs -n kube-system deployment/cluster-autoscaler
+
+---
+
+## Verify Node Group
+
+eksctl get nodegroup --cluster scaling-lab
+
+---
+
+## Monitor Autoscaling
+
+kubectl get nodes -w
+
+kubectl get hpa -w
+
+kubectl get pods -w
+
+---
+
+## Final Validation
+
+kubectl get hpa
+
+kubectl get nodes
+
+kubectl get pods -o wide
+
+kubectl top nodes
+
+kubectl top pods
