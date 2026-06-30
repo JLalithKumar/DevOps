@@ -1,0 +1,51 @@
+===============================
+Exercise 8 – Egress Restriction Incident
+===============================
+
+# Verify Cluster
+kubectl get nodes
+kubectl get pods -A
+kubectl get svc
+kubectl get ingress
+
+# Verify Application
+kubectl get deployment
+kubectl get pods -o wide
+
+# Test Connectivity
+kubectl exec -it payment-service-77cf95d4df-bqmsf -- sh
+
+curl https://dynamodb.us-east-1.amazonaws.com
+
+# Check Network Policies
+kubectl get networkpolicy -A
+
+# Get EC2 Instance and Security Group
+aws ec2 describe-instances ^
+--filters "Name=instance-state-name,Values=running" ^
+--query "Reservations[].Instances[].[InstanceId,PrivateIpAddress,SecurityGroups[].GroupId]" ^
+--output table
+
+# Check Security Group
+aws ec2 describe-security-groups ^
+--group-ids sg-01ef8c6a73c7db5d8 ^
+--query "SecurityGroups[].{GroupId:GroupId,GroupName:GroupName,Inbound:IpPermissions,Outbound:IpPermissionsEgress}" ^
+--output json
+
+# Get Subnet ID
+aws ec2 describe-instances ^
+--instance-ids i-0cecc60f8a44c31b1 ^
+--query "Reservations[].Instances[].SubnetId" ^
+--output text
+
+# Check Route Table
+aws ec2 describe-route-tables ^
+--filters "Name=association.subnet-id,Values=subnet-0adbe8c9e9b8de281" ^
+--query "RouteTables[].Routes[].{Destination:DestinationCidrBlock,Gateway:GatewayId,NAT:NatGatewayId,State:State}" ^
+--output table
+
+# Check VPC Endpoints
+aws ec2 describe-vpc-endpoints ^
+--filters "Name=vpc-id,Values=vpc-0b6dc12743fc95a70" ^
+--query "VpcEndpoints[].{Service:ServiceName,State:State,Type:VpcEndpointType}" ^
+--output table
