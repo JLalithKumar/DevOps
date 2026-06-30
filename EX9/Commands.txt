@@ -1,0 +1,147 @@
+=========================================
+EXERCISE 9
+Prometheus Monitoring Failure Investigation
+=========================================
+
+# Add Prometheus Helm Repository
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# Verify Chart
+helm search repo kube-prometheus-stack
+
+# Install Monitoring Stack
+helm install monitoring prometheus-community/kube-prometheus-stack ^
+--namespace monitoring ^
+--create-namespace
+
+# Verify Installation
+helm list -A
+
+kubectl get pods -n monitoring
+
+kubectl get prometheus -n monitoring
+
+kubectl get servicemonitor -n monitoring
+
+# Get Grafana Password (PowerShell)
+[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String((kubectl get secret monitoring-grafana -n monitoring -o jsonpath="{.data.admin-password}")))
+
+# Port Forward Grafana
+kubectl port-forward svc/monitoring-grafana -n monitoring 3000:80
+
+# Port Forward Prometheus
+kubectl port-forward svc/monitoring-kube-prometheus-prometheus -n monitoring 9090:9090
+
+----------------------------------------------------
+Create Demo Application
+----------------------------------------------------
+
+# Create Namespace
+kubectl create namespace demo-monitor
+
+# Deploy Application
+kubectl apply -f deployment.yaml
+
+# Verify Pods
+kubectl get pods -n demo-monitor
+
+# Create Service
+kubectl apply -f service.yaml
+
+# Verify Service
+kubectl get svc -n demo-monitor
+
+# Create ServiceMonitor
+kubectl apply -f servicemonitor.yaml
+
+# Verify ServiceMonitor
+kubectl get servicemonitor -n demo-monitor
+
+----------------------------------------------------
+Healthy Monitoring Verification
+----------------------------------------------------
+
+# Verify Targets
+Open:
+http://localhost:9090
+
+Status
+→ Targets
+
+Expected:
+demo-app → UP
+
+----------------------------------------------------
+Failure Simulation
+----------------------------------------------------
+
+Edit service.yaml
+
+Change
+
+name: metrics
+
+to
+
+name: prometheus
+
+Apply
+
+kubectl apply -f service.yaml
+
+----------------------------------------------------
+Failure Investigation
+----------------------------------------------------
+
+kubectl describe svc demo-app -n demo-monitor
+
+kubectl get endpoints demo-app -n demo-monitor
+
+kubectl describe servicemonitor demo-app -n demo-monitor
+
+Observe:
+
+Service Port Name
+=
+prometheus
+
+ServiceMonitor Port
+=
+metrics
+
+Root Cause:
+Port name mismatch.
+
+----------------------------------------------------
+Fix
+----------------------------------------------------
+
+Edit service.yaml
+
+Change
+
+name: prometheus
+
+back to
+
+name: metrics
+
+Apply
+
+kubectl apply -f service.yaml
+
+----------------------------------------------------
+Verification
+----------------------------------------------------
+
+Open Prometheus
+
+Status
+→ Targets
+
+Expected:
+
+demo-app → UP
+
+Exercise Completed Successfully
