@@ -1,0 +1,19 @@
+Exercise 12 - Comments
+
+Exercise: Node NotReady Production Incident
+
+Status: Completed Successfully
+
+What was performed: - Verified node health using kubectl get nodes and
+kubectl describe node. - Enabled SSH access by recreating the EKS
+cluster with an EC2 key pair. - Connected to an EKS worker node. -
+Checked filesystem usage with df -h. - Simulated disk exhaustion by
+creating large files using fallocate. - Observed kubelet events: -
+FreeDiskSpaceFailed - ImageGCFailed - EvictionThresholdMet - Verified
+DiskPressure=True. - Observed the automatic
+node.kubernetes.io/disk-pressure:NoSchedule taint. - Removed the test
+files and restarted the kubelet. - Confirmed recovery with: -
+DiskPressure=False - Ready=True - Taints removed
+
+Outcome: Successfully reproduced and recovered from a Kubernetes node
+disk pressure incident on Amazon EKS.
