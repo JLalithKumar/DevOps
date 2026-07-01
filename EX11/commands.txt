@@ -1,0 +1,35 @@
+# Exercise 11 - Commands Used
+
+kubectl create namespace ex11
+
+kubectl apply -f postgres-deployment.yaml
+kubectl apply -f postgres-service.yaml
+
+kubectl get pods -n ex11
+kubectl get svc -n ex11
+
+kubectl apply -f payment-secret.yaml
+kubectl get secret -n ex11
+
+kubectl apply -f payment-deployment.yaml
+kubectl get pods -n ex11
+
+kubectl scale deployment postgres --replicas=0 -n ex11
+kubectl delete pod -n ex11 -l app=payment-service
+
+kubectl logs -n ex11 <payment-pod>
+kubectl logs -n ex11 <payment-pod> --previous
+kubectl describe pod <payment-pod> -n ex11
+
+kubectl describe secret payment-secret -n ex11
+kubectl get secret payment-secret -n ex11 -o yaml
+
+kubectl get svc -n ex11
+kubectl get endpoints -n ex11
+
+kubectl scale deployment postgres --replicas=1 -n ex11
+kubectl get pods -n ex11 -w
+kubectl delete pod -n ex11 -l app=payment-service
+
+kubectl get endpoints -n ex11
+kubectl get pods -n ex11

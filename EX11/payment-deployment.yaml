@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: ex11
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: payment-service
+
+  template:
+    metadata:
+      labels:
+        app: payment-service
+
+    spec:
+      containers:
+      - name: payment-service
+
+        image: postgres:15
+
+        envFrom:
+        - secretRef:
+            name: payment-secret
+
+        command:
+        - sh
+        - -c
+        - |
+          echo "Connecting to database..."
+          export PGPASSWORD=$DB_PASSWORD
+
+          until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER
+          do
+            echo "panic:"
+            echo "dial tcp $DB_HOST:$DB_PORT"
+            echo "connection refused"
+            exit 1
+          done
+
+          sleep 3600
