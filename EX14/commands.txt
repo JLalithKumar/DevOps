@@ -1,0 +1,109 @@
+############################################
+Exercise 14 - Distributed Tracing Investigation
+############################################
+
+# Go to project directory
+cd C:\Users\lalit\Downloads\Task\EX14
+
+# Build all Docker images
+docker compose build
+
+# Start all services
+docker compose up -d
+
+# Verify containers
+docker compose ps
+
+# View running containers
+docker ps
+
+# View logs
+docker compose logs
+
+# View individual service logs
+docker compose logs checkout-service
+docker compose logs inventory-service
+docker compose logs payment-service
+docker compose logs tempo
+docker compose logs grafana
+
+# Stop all containers
+docker compose down
+
+# Restart a service
+docker compose restart checkout-service
+docker compose restart inventory-service
+docker compose restart payment-service
+docker compose restart tempo
+docker compose restart grafana
+
+################################################
+Generate Traffic
+################################################
+
+# Open in browser
+http://localhost:5000/checkout
+
+# OR generate multiple requests
+
+for /L %i in (1,1,10) do curl http://localhost:5000/checkout
+
+################################################
+Verify Services
+################################################
+
+http://localhost:5000
+http://localhost:5001
+http://localhost:5002
+
+################################################
+Grafana
+################################################
+
+http://localhost:3000
+
+Username:
+admin
+
+Password:
+admin
+
+################################################
+Tempo Investigation
+################################################
+
+Explore
+
+↓
+
+Tempo Datasource
+
+↓
+
+Search
+
+↓
+
+Run Query
+
+↓
+
+Open Trace
+
+↓
+
+Analyze Waterfall
+
+################################################
+Docker Cleanup
+################################################
+
+docker compose down
+
+docker image ls
+
+docker container ls
+
+docker network ls
+
+docker volume ls
