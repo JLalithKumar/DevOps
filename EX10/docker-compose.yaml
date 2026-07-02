@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  fakeservice:
+    image: alpine
+    command: >
+      sh -c "while true; do echo \"\$(date) INFO All systems nominal\" >> /var/log/app.log; sleep 2; done"
+    volumes:
+      - shared-logs:/var/log
+
+  alloy:
+    image: grafana/alloy:latest
+    volumes:
+      - ./alloy-config.river:/etc/alloy/config.river:ro
+      - shared-logs:/var/log:ro
+    entrypoint:
+      - /bin/alloy
+      - run
+      - /etc/alloy/config.river
+    depends_on:
+      - loki
+
+  loki:
+    image: grafana/loki:latest
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+volumes:
+  shared-logs:

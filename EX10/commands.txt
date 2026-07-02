@@ -1,0 +1,27 @@
+docker compose up -d
+
+docker compose ps
+
+docker compose logs alloy
+
+docker compose logs loki
+
+curl http://localhost:3100/ready
+
+curl -X POST http://localhost:3100/loki/api/v1/push
+
+Add X-Scope-OrgID header in alloy-config.river
+
+docker compose restart alloy
+
+curl -H “X-Scope-OrgID: tenant1”
+http://localhost:3100/loki/api/v1/labels
+
+curl -G ^ -H “X-Scope-OrgID: tenant1” ^ –data-urlencode “name=filename”
+^ http://localhost:3100/loki/api/v1/label/filename/values
+
+curl -G ^ -H “X-Scope-OrgID: tenant1” ^ –data-urlencode
+“query={filename=\”/var/log/app.log\“}” ^
+http://localhost:3100/loki/api/v1/query_range
+
+docker compose down
